@@ -1,0 +1,13 @@
+
+Each Infomasion
+data_list :  <type 'list'> 3
+imgset :  <type 'list'> N
+dataset :  <type 'numpy.ndarray'> (sum(N_array),h,w,3)
+label :  <type 'numpy.ndarray'> (sum(N_array,)
+color_x :  <type 'numpy.ndarray'> (sum(N_array,h,w,3)
+gray_x :  <type 'numpy.ndarray'> (sum(N_array,h,w)
+x :  <type 'numpy.ndarray'> (sum(N_array,1,h,w)
+x_train :  <type 'numpy.ndarray'> (N_train,1,h,w)
+x_test :  <type 'numpy.ndarray'> (N-N_rain,1,h,w)
+y_train :  <type 'numpy.ndarray'> (N_train,)
+y_test  :  <type 'numpy.ndarray'> (N-N_train,)

@@ -482,7 +482,7 @@ def makeData(folder_list,N_array,h,w,N,N_train,mizumasi_num):
   #-------------------------------------------------------------------------
   #水増し!!!!
   N_array = N_array*mizumasi_num
-  #data_list, label_list = dataListMizumasi(data_list,folder_list)
+  ##data_list, label_list = dataListMizumasi(data_list,folder_list)
   dataset,labelset = gattaiResize(data_list,label_list,h,w)
   #dataset,labelset = dataSetMizumasi(dataset,N_array,mizumasi_num)
   #--------------------------------------------------------------------------

@@ -5,10 +5,14 @@ git config --help　コマンド確認
 
 git init　ディレクトリをgitで使う宣言
 git add <file>　ステージングエリア(インデックス)にあげる
+git add .　新規作成された、もしくは変更されたファイルをadd。rmコマンドなどで削除されたファイルはaddされません。
+git add -u　一つ前と最新のステージを比較して、変更があった部分のみをadd。新しく作られたファイルはaddされない。
+git add -A　新規作成、修正、削除といった全てのファイルをadd
 git commit　リポジトリにあげる
 git commit -m "１行メッセージ"
 git commit -am "１行メッセージ"　addとcommitをいっぺんに行う
 git commit --amend　直前のコミットに多少のミスがあってlogにわざわざ残さず変更したいとき
+git rm/mv <file>　gitの管理下に置かれたファイルを削除/移動
 
 git log　履歴を見る(ID、人、日時、メッセージ)
 git log --oneline　履歴を見る(１行、ID、メッセージ)
@@ -21,11 +25,9 @@ git checkout -- <file>
 git diff　変更された場所確認(まだステージングエリアにあげていない場合)
 git diff --cached　変更された場所確認(まだリポジトリにあげていない場合)
 
-git add .　現在のディレクトリ以下のファイルを全てaddする
-git rm/mv <file>　gitの管理下に置かれたファイルを削除/移動
-
 vim .gitignore 現在のディレクトリ以下にあるupしたくないファイルなどをgit管理に含めない設定　*.logでlogファイル
 
+git reset --soft　ワークディレクトリの内容はそのままでコミットだけを取り消す。
 git reset --hard <commitID(直前のcommitIDはHAEDでok)>　現在の作業ディレクトリもステージングエリアを前のコミットの状態に戻したい
 git reset HEAD　現在のステージングエリアを作業ディレクトリ状態に戻す
 git reset --hard ORIG_HEAD　resetで消しちゃったコミットファイルに戻る

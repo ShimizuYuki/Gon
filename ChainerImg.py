@@ -107,6 +107,7 @@ class NN(object):
     #Optimaizerの設定
     self.optimizer = optimizers.Adam()
     self.optimizer.setup(self.model)
+
   def forward(self,x_data, y_data, train=True):
     if self.conv==1:
       x, t = Variable(x_data), Variable(y_data)
@@ -195,18 +196,28 @@ class NN(object):
     train_acc  = []
     test_loss = []
     test_acc  = []
+    train_loss_ave = []
+    train_acc_ave  = []
+    test_loss_ave = []
+    test_acc_ave  = []
+
     # Learning loop
     for epoch in xrange(1, n_epoch+1):
       '''
       訓練
       '''
+      perm = np.random.permutation(N_train)
+      
       sum_trainloss = 0
       sum_trainacc = 0
       # 0〜Nまでのデータをバッチサイズごとに使って学習
       for i in xrange(0, N_train, batchsize):
-        x_batch = x_train[i:i+batchsize]
-        y_batch = y_train[i:i+batchsize]
-        # 勾配を初期化
+        #x_batch = x_train[i:i+batchsize]
+        #y_batch = y_train[i:i+batchsize]
+        x_batch = x_train[perm[i:i+batchsize]]
+        y_batch = y_train[perm[i:i+batchsize]]
+       
+       # 勾配を初期化
         self.optimizer.zero_grads()
         # 順伝播させて誤差と精度を算出
         loss,acc,y = self.forward(x_batch,y_batch)
@@ -217,11 +228,16 @@ class NN(object):
         self.optimizer.update()
         train_loss.append(loss.data)
         train_acc.append(acc.data)
-        sum_trainloss += loss.data * batchsize
-        sum_trainacc  += acc.data  * batchsize
-        print 'epoch:%d'%(epoch)+u"のTrain %f"%((i+batchsize)*100.0/N_train)+u"% 終了"
+        sum_trainloss += float(cuda.to_cpu(loss.data)) * batchsize
+        sum_trainacc  += float(cuda.to_cpu(acc.data)) * batchsize
+        
+	print 'epoch%d'%(epoch)+u"のTrain %f"%((i+batchsize)*100.0/N_train)+u"% 終了"
       mean_trainloss = sum_trainloss / N_train
       mean_trainacc = sum_trainacc / N_train
+
+      train_loss_ave.append(mean_trainloss)
+      train_acc_ave.append(mean_trainacc)
+
       print "----------------------------------------------"
       Jikan1=str(datetime.datetime.now()).split()
       Jikan2=Jikan1[1].split(":")
@@ -232,13 +248,14 @@ class NN(object):
       ('./modelkeep/'+self.NetName+"-conv%d"%(self.conv)+'_Model_'+Jikan,self.model)
       print u"モデルを保存しました"
       print "----------------------------------------------"
+
       '''
       テスト
       '''
       #テストデータで誤差と正解精度を算出
       if (howloop==1):
         sum_testloss = 0
-        sum_testacc     = 0
+        sum_testacc = 0
         for i in xrange(0, N_test, batchsize):
           x_batch = x_test[i:i+batchsize]
           y_batch = y_test[i:i+batchsize]
@@ -247,21 +264,23 @@ class NN(object):
           =self.forward(x_batch,y_batch,train=False)
           test_loss.append(loss.data)
           test_acc.append(acc.data)
-          sum_testloss += loss.data * batchsize
-          sum_testacc  += acc.data * batchsize
+          sum_testloss += float(cuda.to_cpu(loss.data)) * batchsize
+          sum_testacc += float(cuda.to_cpu(acc.data)) * batchsize
           print 'epoch:%d'%(epoch)+u"のTest %f"%((i+batchsize)*100.0/N_test)+u"% 終了"
         mean_testloss = sum_testloss / N_test
-        mean_testacc  = sum_testacc  / N_test
+        mean_testacc = sum_testacc / N_test
+	test_loss_ave.append(mean_testloss)
+        test_acc_ave.append(mean_testacc)
 
         print "----------------------------------------------"
         print "----------------------------------------------"
         print "conv",self.conv,',epoch',epoch,u"終了"
         # 訓練データの誤差と、正解精度を表示
-        print 'train mean loss=%f'%(mean_trainloss),\
-              'train mean acc=%f'%(mean_trainacc)
+        print 'train mean loss=%f,'%(mean_trainloss),\
+              'acc=%f'%(mean_trainacc)
         # テストデータの誤差と、正解精度を表示
-        print 'test mean loss=%f'%(mean_testloss),\
-              'test mean acc=%f'%(mean_testacc)
+        print 'test  mean loss=%f,'%(mean_testloss),\
+              'acc=%f'%(mean_testacc)
         print ('Time = %f'%(time.clock()-self.StartTime))
         print "----------------------------------------------"
         print "----------------------------------------------"
@@ -270,24 +289,44 @@ class NN(object):
         print "----------------------------------------------"
         print "conv",self.conv,',epoch',epoch,u"終了"
         # 訓練データの誤差と、正解精度を表示
-        print 'train mean loss=%f'%(mean_trainloss),\
-              'train mean acc=%f'%(mean_trainacc)
+        print 'train mean loss=%f,'%(mean_trainloss),\
+              'acc=%f'%(mean_trainacc)
         print "----------------------------------------------"
         print "----------------------------------------------"
+	
+    #Loss,Accの平均値
+    self.LossAccKeep(train_loss_ave\
+    ,"LossAcc/"+self.NetName+"-conv%d"%(self.conv)+"_M_Train_Loss"+Jikan+".csv")
+    self.LossAccKeep(train_acc_ave\
+    ,"LossAcc/"+self.NetName+"-conv%d"%(self.conv)+"_M_Train_Acc"+Jikan+".csv")
+    self.LossAccKeep(test_loss_ave\
+    ,"LossAcc/"+self.NetName+"-conv%d"%(self.conv)+"_M_Test_Loss"+Jikan+".csv")
+    self.LossAccKeep(test_acc_ave\
+    ,"LossAcc/"+self.NetName+"-conv%d"%(self.conv)+"_M_Test_Acc"+Jikan+".csv")
 
     #Loss,Accの保存
     self.LossAccKeep(train_loss\
-    ,"LossAcc/"+self.NetName+"-conv%d"%(self.conv)+"_Train_Loss"+Jikan+".txt")
+    ,"LossAcc/"+self.NetName+"-conv%d"%(self.conv)+"_Train_Loss"+Jikan+".csv")
     self.LossAccKeep(train_acc\
-    ,"LossAcc/"+self.NetName+"-conv%d"%(self.conv)+"_Train_Acc"+Jikan+".txt")
+    ,"LossAcc/"+self.NetName+"-conv%d"%(self.conv)+"_Train_Acc"+Jikan+".csv")
     self.LossAccKeep(test_loss\
-    ,"LossAcc/"+self.NetName+"-conv%d"%(self.conv)+"_Test_Loss"+Jikan+".txt")
+    ,"LossAcc/"+self.NetName+"-conv%d"%(self.conv)+"_Test_Loss"+Jikan+".csv")
     self.LossAccKeep(test_acc\
-    ,"LossAcc/"+self.NetName+"-conv%d"%(self.conv)+"_Test_Acc"+Jikan+".txt")
+    ,"LossAcc/"+self.NetName+"-conv%d"%(self.conv)+"_Test_Acc"+Jikan+".csv")
+
+    # 精度と誤差をグラフ描画
+    plt.figure(figsize=(8,6))
+    plt.plot(range(len(train_acc_ave)), train_acc_ave)
+    plt.plot(range(len(test_acc_ave)), test_acc_ave)
+    plt.legend(["train_acc","test_acc"],loc=4)
+    plt.title("Accuracy of digit recognition.")
+    plt.plot()
+
+
   def LossAccKeep(self,List,filename):
     fo = open(filename,'w')
     List_str = map(str,List)
-    NotList = "\t".join(List_str)
+    NotList = "\n".join(List_str)
     fo.write(NotList)
     fo.flush()
     fo.close()
@@ -363,23 +402,23 @@ if __name__ == '__main__':
   #訓練だけなら 0 テストもするなら 1
   howloop = 1
   # 学習の繰り返し回数
-  n_epoch   = 1
+  n_epoch   = 4
   # 確率的勾配降下法で学習させる際の１回分のバッチサイズ
   batchsize = 10
   #---------------------------------------------------------------------------
   #Hozondir = "dumpHumanNotHumanmizumasi72"
   #cate=["Human","NotHuman"]
-  Hozondir = "dumpHumanNotHuman7-3"
+  Hozondir = "dumpHumanNotHuman(D)"
   cate=["Human","NotHuman"]
   #Hozondir = "dumpCharhanGyouzaPasta2016-10-29-11-23"
   #cate = ["Charhan","Gyouza","Pasta"]
   NetName='-'.join(cate)
-  #N_train = 22100
-  #N_test = 9500
-  #N_train = 10
-  #N_test = 10
-  N_train = 129679
-  N_test = 55577
+  #N_train = 129679
+  #N_test = 55577
+  N_train = 34300
+  N_test = 14700
+  #N_train = 140
+  #N_test = 60
   conv=5
   #----------------------------------------------------------------------------
   tate = 3

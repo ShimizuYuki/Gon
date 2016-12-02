@@ -33,7 +33,7 @@ if __name__ == '__main__':
   cate=folder_list
   #何枚の画像を読み込むか(フォルダ内の画像数より大きいとフォルダ内の画像すべてが読み込まれる)
   #read_num = 8
-  read_num = [6,10]
+  read_num = [100,100]
   mizumasi_num = 1
   #読み込ませるpos,negの枚数
   N_array=np.zeros((len(folder_list)),dtype=np.int32)+read_num

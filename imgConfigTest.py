@@ -24,7 +24,7 @@ if __name__ == '__main__':
   cate=["Human","NotHuman"]
   if cate[0]=="Human":
     NetName='-'.join(cate)
-    model_name = "Human-NotHuman-conv5_Model_2016-11-17-19-461"
+    model_name = "Human-NotHuman-conv5_Model_(D)test100-e2"
     conv = 5
   h = 75
   w = 50
